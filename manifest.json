@@ -1,0 +1,28 @@
+{
+  "manifest_version": 2,
+
+  "name": "ETH in NTD value",
+  "description": "知道以太幣的價格！",
+  "version": "1.0",
+
+  "browser_action": {
+    "default_icon": "icon.png",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": ["jquery-3.2.1.js", "popup.js"]
+    }
+  ],
+  "background":
+  {
+    "scripts": ["background.js"]
+  },
+  "permissions": [
+    "activeTab",
+    "https://ajax.googleapis.com/"
+  ]
+}
