@@ -19,8 +19,13 @@ function getEthInNTDValue() {
   setInterval(function(){
     freshPrice();
     getETHValue();
-    getUSDToNTDValue(); 
-  }, 3000);
+    getUSDToNTDValue();
+    setTimeout(sleep, 1000);
+  }, 0);
+}
+
+function sleep(){
+  return true;
 }
 
 function getETHValue(){

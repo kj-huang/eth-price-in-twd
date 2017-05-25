@@ -3,7 +3,7 @@
 
   "name": "ETH in NTD value",
   "description": "知道以太幣的價格！",
-  "version": "1.0",
+  "version": "1.1",
 
   "browser_action": {
     "default_icon": "icon.png",
