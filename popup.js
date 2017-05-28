@@ -13,20 +13,15 @@ window.onload = getEthInNTDValue;
 
 function freshPrice(){
   $("#value").text( " "+($("#eth-value").text() * $("#usd-to-ntd-value").text()).toFixed(2) ) ;
+  setInterval(freshPrice, 1000);
 }
 
 function getEthInNTDValue() {
-  setInterval(function(){
-    freshPrice();
     getETHValue();
     getUSDToNTDValue();
-    setTimeout(sleep, 1000);
-  }, 0);
+    freshPrice();
 }
 
-function sleep(){
-  return true;
-}
 
 function getETHValue(){
   $.ajax({
@@ -44,12 +39,12 @@ function getETHValue(){
       var x = data["USD"];
       $("#eth-value").text(x.toFixed(2));
   });;
-  // setInterval(getETHValue, 3000);
+  setInterval(getETHValue, 3000);
 }
 
 function getUSDToNTDValue(){
   $.ajax({
-    url:"http://apilayer.net/api/live?access_key=849f238b1ed8d122d60ed6ddfba79e19&currencies=TWD&source=USD&format=1",
+    url:"https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20csv%20where%20url%3D%27http%3A%2F%2Fdownload.finance.yahoo.com%2Fd%2Fquotes.csv%3Fe%3D.csv%26f%3Dc4l1%26s%3DUSDTWD%3Dx%27&format=json&callback=",
     type:"GET",
     dataType:"json",
     contentType: "application/json",
@@ -60,9 +55,12 @@ function getUSDToNTDValue(){
         console.log("Bad thing happend! " + res.statusText);
     }
  }).done(function( data ) {
-    var x = data["quotes"]["USDTWD"];
-      $("#usd-to-ntd-value").text(x.toFixed(2));
+    console.log(data);
+    var x = data["query"]["results"]["row"]["col1"];
+    console.log(typeof x);
+    $("#usd-to-ntd-value").text(parseInt(x).toFixed(2));
   });
+  setInterval(getUSDToNTDValue, 1000 * 60 * 10);
 }
 
 
