@@ -13,13 +13,13 @@ window.onload = getEthInNTDValue;
 
 function freshPrice(){
   $("#value").text( " "+($("#eth-value").text() * $("#usd-to-ntd-value").text()).toFixed(2) ) ;
-  setInterval(freshPrice, 1000);
+  setInterval(freshPrice, 0);
 }
 
 function getEthInNTDValue() {
-    getETHValue();
-    getUSDToNTDValue();
     freshPrice();
+    getETHValue();
+    getUSDToNTDValue(); 
 }
 
 
@@ -39,7 +39,7 @@ function getETHValue(){
       var x = data["USD"];
       $("#eth-value").text(x.toFixed(2));
   });;
-  setInterval(getETHValue, 3000);
+  setInterval(getETHValue, 1000 * 3);
 }
 
 function getUSDToNTDValue(){
@@ -55,10 +55,8 @@ function getUSDToNTDValue(){
         console.log("Bad thing happend! " + res.statusText);
     }
  }).done(function( data ) {
-    console.log(data);
     var x = data["query"]["results"]["row"]["col1"];
-    console.log(typeof x);
-    $("#usd-to-ntd-value").text(parseInt(x).toFixed(2));
+    $("#usd-to-ntd-value").text(parseFloat(x).toFixed(2));
   });
   setInterval(getUSDToNTDValue, 1000 * 60 * 10);
 }
