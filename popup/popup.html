@@ -3,72 +3,72 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ETH Price in TWD</title>
+  <title>PriceScope</title>
   <link rel="stylesheet" href="popup.css" />
 </head>
 <body>
   <div class="container">
+    <!-- Header -->
     <header>
-      <div class="logo-row">
-        <div class="eth-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M12 1.5L5.5 12.25L12 16.5L18.5 12.25L12 1.5Z" fill="#627EEA"/>
-            <path d="M12 1.5L5.5 12.25L12 9.75V1.5Z" fill="#627EEA" opacity="0.6"/>
-            <path d="M12 17.75L5.5 13.5L12 22.5L18.5 13.5L12 17.75Z" fill="#627EEA"/>
-            <path d="M12 17.75L5.5 13.5L12 22.5V17.75Z" fill="#627EEA" opacity="0.6"/>
-          </svg>
-        </div>
-        <h1>ETH / TWD</h1>
+      <div class="header-left">
+        <svg class="logo-icon" width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="#627EEA" stroke-width="2"/>
+          <path d="M7 12h10M12 7v10" stroke="#627EEA" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <h1>PriceScope</h1>
       </div>
-    </header>
-
-    <section class="price-section">
-      <div class="price-main">
-        <span class="currency">NT$</span>
-        <span id="price" class="price">--</span>
-      </div>
-      <div class="price-sub">
-        <span id="priceUsd" class="price-usd">$-- USD</span>
-        <span id="change" class="change">--%</span>
-      </div>
-    </section>
-
-    <section class="stats">
-      <div class="stat">
-        <span class="stat-label">24h High</span>
-        <span id="high" class="stat-value">--</span>
-      </div>
-      <div class="stat">
-        <span class="stat-label">24h Low</span>
-        <span id="low" class="stat-value">--</span>
-      </div>
-      <div class="stat">
-        <span class="stat-label">Volume</span>
-        <span id="volume" class="stat-value">--</span>
-      </div>
-      <div class="stat">
-        <span class="stat-label">USD/TWD</span>
-        <span id="rate" class="stat-value">--</span>
-      </div>
-    </section>
-
-    <section class="chart-section">
-      <div class="chart-tabs">
-        <button class="chart-tab active" data-range="24h">24H</button>
-        <button class="chart-tab" data-range="7d">7D</button>
-      </div>
-      <canvas id="chart" width="340" height="140"></canvas>
-    </section>
-
-    <footer>
-      <span id="updated" class="updated">--</span>
-      <button id="refreshBtn" class="refresh-btn" title="Refresh">
+      <button id="refreshBtn" class="icon-btn" title="Refresh all">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="23 4 23 10 17 10"></polyline>
           <polyline points="1 20 1 14 7 14"></polyline>
           <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
         </svg>
       </button>
+    </header>
+
+    <!-- Category Tabs -->
+    <nav class="category-tabs">
+      <button class="cat-tab active" data-cat="crypto">Crypto</button>
+      <button class="cat-tab" data-cat="stocks">Stocks</button>
+      <button class="cat-tab" data-cat="forex">Forex</button>
+    </nav>
+
+    <!-- Asset List -->
+    <div id="assetList" class="asset-list">
+      <div class="loading">Loading prices...</div>
+    </div>
+
+    <!-- Detail Panel (hidden by default) -->
+    <div id="detailPanel" class="detail-panel hidden">
+      <button id="backBtn" class="back-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        Back
+      </button>
+      <div class="detail-header">
+        <h2 id="detailName">--</h2>
+        <span id="detailType" class="detail-type-badge">--</span>
+      </div>
+      <div class="detail-price-row">
+        <span class="detail-currency">NT$</span>
+        <span id="detailPrice" class="detail-price">--</span>
+        <span id="detailChange" class="change">--%</span>
+      </div>
+      <div id="detailSubprice" class="detail-subprice">--</div>
+      <div class="detail-stats" id="detailStats"></div>
+      <div class="chart-section">
+        <div class="chart-tabs">
+          <button class="chart-tab active" data-range="24h">24H</button>
+          <button class="chart-tab" data-range="7d">7D</button>
+        </div>
+        <canvas id="chart" width="340" height="140"></canvas>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <span id="updated" class="updated">--</span>
     </footer>
   </div>
   <script src="popup.js"></script>

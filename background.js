@@ -1,99 +1,83 @@
-const BINANCE_TICKER_URL = 'https://api.binance.com/api/v3/ticker/24hr?symbol=ETHUSDT';
-const BINANCE_KLINES_URL = 'https://api.binance.com/api/v3/klines';
-const EXCHANGE_RATE_URL = 'https://open.er-api.com/v6/latest/USD';
+import { fetchCryptoAsset, fetchStockAsset, fetchForexAsset } from './lib/api.js';
+import { DEFAULT_ASSETS } from './lib/config.js';
 
-const ALARM_NAME = 'refresh-eth-price';
-const REFRESH_INTERVAL_MINUTES = 1;
+const ALARM_NAME = 'refresh-all-prices';
+const REFRESH_INTERVAL_MINUTES = 2;
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.alarms.create(ALARM_NAME, { periodInMinutes: REFRESH_INTERVAL_MINUTES });
-  fetchAndStore();
+  fetchAll();
 });
 
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === ALARM_NAME) {
-    fetchAndStore();
+    fetchAll();
   }
 });
 
-async function fetchUsdToTwd() {
-  const res = await fetch(EXCHANGE_RATE_URL);
-  if (!res.ok) throw new Error(`ExchangeRate API error: ${res.status}`);
-  const data = await res.json();
-  return data.rates.TWD;
-}
+async function fetchAll() {
+  const results = {};
+  const errors = [];
 
-async function fetchEthTicker() {
-  const res = await fetch(BINANCE_TICKER_URL);
-  if (!res.ok) throw new Error(`Binance ticker error: ${res.status}`);
-  return res.json();
-}
+  // Fetch crypto pairs
+  for (const pair of DEFAULT_ASSETS.crypto) {
+    try {
+      results[pair.id] = await fetchCryptoAsset(pair);
+    } catch (err) {
+      errors.push(`${pair.id}: ${err.message}`);
+    }
+  }
 
-async function fetchKlines(interval, limit) {
-  const url = `${BINANCE_KLINES_URL}?symbol=ETHUSDT&interval=${interval}&limit=${limit}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Binance klines error: ${res.status}`);
-  return res.json();
-}
+  // Fetch stocks sequentially to respect Yahoo rate limits
+  for (const pair of DEFAULT_ASSETS.stocks) {
+    try {
+      results[pair.id] = await fetchStockAsset(pair);
+    } catch (err) {
+      errors.push(`${pair.id}: ${err.message}`);
+    }
+    // Small delay between Yahoo calls
+    await sleep(500);
+  }
 
-async function fetchAndStore() {
-  try {
-    const [ticker, usdToTwd, klines24h, klines7d] = await Promise.all([
-      fetchEthTicker(),
-      fetchUsdToTwd(),
-      fetchKlines('1h', 24),
-      fetchKlines('4h', 42),
-    ]);
+  // Fetch forex pairs (all use cached rates, fast)
+  for (const pair of DEFAULT_ASSETS.forex) {
+    try {
+      results[pair.id] = await fetchForexAsset(pair);
+    } catch (err) {
+      errors.push(`${pair.id}: ${err.message}`);
+    }
+  }
 
-    const priceUsd = parseFloat(ticker.lastPrice);
-    const priceTwd = priceUsd * usdToTwd;
-    const change24h = parseFloat(ticker.priceChangePercent);
-    const high24hTwd = parseFloat(ticker.highPrice) * usdToTwd;
-    const low24hTwd = parseFloat(ticker.lowPrice) * usdToTwd;
-    const volume24h = parseFloat(ticker.volume);
-
-    const chart24h = klines24h.map((k) => ({
-      time: k[0],
-      close: parseFloat(k[4]) * usdToTwd,
-    }));
-
-    const chart7d = klines7d.map((k) => ({
-      time: k[0],
-      close: parseFloat(k[4]) * usdToTwd,
-    }));
-
-    const badgeText = formatBadge(priceTwd);
-    const badgeColor = change24h >= 0 ? '#22c55e' : '#ef4444';
+  // Update badge with first crypto price
+  const firstCrypto = results[DEFAULT_ASSETS.crypto[0]?.id];
+  if (firstCrypto) {
+    const badgeText = formatBadge(firstCrypto.priceTwd);
+    const badgeColor = firstCrypto.change24h >= 0 ? '#22c55e' : '#ef4444';
     chrome.action.setBadgeText({ text: badgeText });
     chrome.action.setBadgeBackgroundColor({ color: badgeColor });
     chrome.action.setBadgeTextColor({ color: '#ffffff' });
-
-    await chrome.storage.local.set({
-      priceTwd,
-      priceUsd,
-      change24h,
-      high24hTwd,
-      low24hTwd,
-      volume24h,
-      usdToTwd,
-      chart24h,
-      chart7d,
-      lastUpdated: Date.now(),
-    });
-  } catch (err) {
-    console.error('Failed to fetch ETH price:', err);
   }
+
+  await chrome.storage.local.set({
+    assets: results,
+    lastUpdated: Date.now(),
+    errors: errors.length > 0 ? errors : null,
+  });
 }
 
 function formatBadge(price) {
-  if (price >= 1000000) return `${(price / 1000000).toFixed(0)}M`;
+  if (price >= 1_000_000) return `${(price / 1_000_000).toFixed(0)}M`;
   if (price >= 1000) return `${(price / 1000).toFixed(0)}K`;
   return price.toFixed(0);
 }
 
+function sleep(ms) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   if (msg.action === 'refresh') {
-    fetchAndStore().then(() => sendResponse({ ok: true }));
+    fetchAll().then(() => sendResponse({ ok: true }));
     return true;
   }
 });
