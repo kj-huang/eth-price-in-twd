@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "ETH Price in TWD",
+  "description": "Real-time Ethereum price in New Taiwan Dollar with 24h price chart",
+  "version": "2.0.0",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png"
+    },
+    "default_title": "ETH Price in TWD"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "permissions": [
+    "alarms",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://api.binance.com/*",
+    "https://open.er-api.com/*"
+  ],
+  "minimum_chrome_version": "110"
+}
